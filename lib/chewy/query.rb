@@ -1100,13 +1100,14 @@ module Chewy
         request: _request, indexes: _indexes, types: _types,
         index: _indexes.one? ? _indexes.first : _indexes,
         type: _types.one? ? _types.first : _types do
-        begin
-          Chewy.client.search(_request)
-        rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
-          raise e if e.message !~ /IndexMissingException/ && e.message !~ /index_not_found_exception/
-          {}
+          begin
+            request = _request.merge(rest_total_hits_as_int: true)
+            Chewy.client.search(request)
+          rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+            raise e if e.message !~ /IndexMissingException/ && e.message !~ /index_not_found_exception/
+            {}
+          end
         end
-      end
     end
 
     def _results

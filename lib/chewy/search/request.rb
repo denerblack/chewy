@@ -977,12 +977,13 @@ module Chewy
         request_body = render.merge(additional)
         ActiveSupport::Notifications.instrument 'search_query.chewy',
           notification_payload(request: request_body) do
-            begin
-              Chewy.client.search(request_body)
-            rescue Elasticsearch::Transport::Transport::Errors::NotFound
-              {}
-            end
+          begin
+            request_body = request_body.merge(rest_total_hits_as_int: true)
+            Chewy.client.search(request_body)
+          rescue Elasticsearch::Transport::Transport::Errors::NotFound
+            {}
           end
+        end
       end
 
       def notification_payload(additional)
